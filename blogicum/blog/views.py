@@ -13,12 +13,19 @@ from .forms import CreatePost, CommentForm
 
 class PostMixin:
     model = Post
-    fields = ('title', 'text', 'image', 'pub_date', 'location', 'category', 'author')
+    fields = ('title',
+              'text',
+              'image',
+              'pub_date',
+              'location',
+              'category',
+              'author')
     template_name = 'blog/create.html'
     pk_url_kwarg = 'post_id'
 
     def get_success_url(self):
-        return reverse('blog:post_detail', kwargs={'pk': self.kwargs['post_id']})
+        return reverse('blog:post_detail',
+                       kwargs={'pk': self.kwargs['post_id']})
 
 
 class IndexListView(ListView):
@@ -38,7 +45,6 @@ class IndexListView(ListView):
         ).annotate(
             comment_count=Count('comments')
         ).order_by('-pub_date')
-
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -118,7 +124,6 @@ class PostDetailView(DetailView):
         return context
 
 
-
 class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = 'blog/create.html'
@@ -137,7 +142,7 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
             'blog:profile',
             kwargs={'username': self.request.user}
         )
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = CreatePost(instance=self.object)
@@ -170,7 +175,6 @@ class ProfileDetailView(ListView):
                 is_published=True,
             )
         return queryset
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -209,11 +213,13 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
             pub_date__lt=datetime.now()
         )
         form.instance.author = self.request.user
-        form.instance.post = get_object_or_404(filtering, pk=self.kwargs['post_id'])
+        form.instance.post = get_object_or_404(filtering,
+                                               pk=self.kwargs['post_id'])
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('blog:post_detail', kwargs={'post_id': self.kwargs['post_id']})
+        return reverse('blog:post_detail',
+                       kwargs={'post_id': self.kwargs['post_id']})
 
 
 class CommentUpdateView(LoginRequiredMixin, UpdateView):
@@ -259,16 +265,14 @@ class CategoryListView(ListView):
 
     def get_queryset(self):
         return Post.objects.select_related(
-                'author',
-                'location',
-                'category',
-            ).filter(
+            'author',
+            'location',
+            'category',).filter(
                 pub_date__lt=datetime.now(),
                 is_published=True,
-                category__is_published=True,
-            ).annotate(
-                comment_count=Count('comments')
-            ).order_by('-pub_date').filter(
+                category__is_published=True,).annotate(
+                    comment_count=Count('comments')).order_by(
+                        '-pub_date').filter(
             category__slug=self.kwargs['slug'],
         )
 
